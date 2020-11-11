@@ -1,0 +1,18 @@
+FROM golang
+
+USER root
+
+# Performing copy .ssh without rm command is a sensitive leak
+COPY .ssh /.ssh
+
+# cat of a sensitive file
+RUN cat /.ssh/id_rsa
+
+# Performing scp should be discouraged
+RUN scp remoteserver.com:/tmp/build.tar.gz /tmp \
+   && tar -xvf /tmp/build.tar.gz \
+   && rm /tmp/build.tar.gz
+
+# Look for rm -rf /.ssh here
+
+ENTRYPOINT ["/bin/bash"]

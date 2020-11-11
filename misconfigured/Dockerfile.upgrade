@@ -1,0 +1,13 @@
+FROM golang
+
+USER root
+
+# dist upgrade should be blocked
+RUN apt update -y && apt dist-upgrade -y
+
+# look for rm -rf /var/lib/apt/lists/* or apt clean or apt-get clean
+
+FROM centos
+
+# Ensure the below development packages gets uninstalled towards the end of the build
+RUN yum -y install rpm-build redhat-rpm-config rpmdevtools

@@ -1,0 +1,25 @@
+FROM ubuntu as builder
+
+ENV FOO=BAR \
+  USE_APP=true
+
+# Overwriting a safe command in /usr/bin directory
+RUN curl -L "https://git.io/foo" -o "/usr/bin/${USE_APP}"
+
+
+# Package downloaded and uncompressed to /tmp/staticcheck
+RUN curl -LO "https://github.com/dominikh/go-tools/releases/download/${SC_VERSION}/staticcheck_linux_amd64.tar.gz" \
+	    && tar -C /tmp -xvf staticcheck_linux_amd64.tar.gz \
+	    && chmod +x /tmp/staticcheck/staticcheck
+
+# Start a new multi-stage build
+FROM ubuntu:latest as new_image
+
+# Vulnerable package that was downloaded in the previous image is simply copied over to the new image
+COPY --from=builder /tmp /tmp
+
+# The below copy is not vulnerable based on this dockerfile
+COPY --from=builder /app /app
+
+
+CMD ["/bin/bash"]
